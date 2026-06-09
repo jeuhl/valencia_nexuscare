@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   // ADMIN, DOCTOR, NURSE, LAB_STAFF, CLEANING_STAFF, RECEPTIONIST, PATIENT
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  auditLogs AuditLog[]
+}
+
+model Patient {
+  id           String   @id @default(uuid())
+  firstName    String
+  lastName     String
+  dob          DateTime
+  gender       String
+  contactPhone String?
+  queueRef     String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  queues       Queue[]
+  movements    PatientMovement[]
+  appointments Appointment[]
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // TRIAGE, DIAGNOSTIC, TREATMENT, DISCHARGE
+  capacity    Int      @default(10)
+  isActive    Boolean  @default(true)
+  rooms       Room[]
+  queues      Queue[]
+}
+
+model Room {
+  id           String     @id @default(uuid())
+  name         String
+  floor        Int        @default(1)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  status       String     @default("OPEN") // OPEN, OCCUPIED, CLEANING, RESERVED
+  queues       Queue[]
+}
+
+model Queue {
+  id           String     @id @default(uuid())
+  patientId    String
+  patient      Patient    @relation(fields: [patientId], references: [id])
+  priority     String     // CODE_RED, HIGH, MEDIUM, LOW
+  status       String     @default("WAITING")
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  roomId       String?
+  room         Room?      @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  estimatedWait Int
+  joinedAt     DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  labRequests  LabRequest[]
+  movements    PatientMovement[]
+  vitals       Vitals?
+}
+
+model LabRequest {
+  id          String   @id @default(uuid())
+  queueId     String
+  queue       Queue    @relation(fields: [queueId], references: [id])
+  testType    String
+  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED
+  results     String?
+  requestedBy String?  // doctor name
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   // INFO, WARNING, EMERGENCY, SUCCESS
+  role      String   // who should see it: ALL, NURSE, DOCTOR, LAB_STAFF, etc.
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  scheduledAt DateTime
+  department  String
+  doctorName  String?
+  status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model PatientMovement {
+  id        String   @id @default(uuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  queueId   String
+  queue     Queue    @relation(fields: [queueId], references: [id])
+  fromStatus String
+  toStatus  String
+  movedAt   DateTime @default(now())
+  movedBy   String?  // user name
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+}
+
+model Vitals {
+  id          String   @id @default(uuid())
+  queueId     String   @unique
+  queue       Queue    @relation(fields: [queueId], references: [id])
+  bp          String?  // Blood Pressure
+  temp        Float?   // Temperature
+  heartRate   Int?
+  oxygen      Int?     // SpO2
+  weight      Float?
+  notes       String?
+  recordedBy  String?  // user name
+  createdAt   DateTime @default(now())
+}
+
