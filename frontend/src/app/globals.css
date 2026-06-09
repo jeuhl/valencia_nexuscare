@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+}
+
+body {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.medical-bg {
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(#cbd5e1 0.8px, transparent 0.8px),
+    url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%233b82f6' fill-opacity='0.02'%3E%3Cpath d='M40 40h10v-4h4v4h10v4H54v10h-4V44H40v-4z'/%3E%3Ccircle cx='150' cy='50' r='5'/%3E%3Cpath d='M120 140h20v2h-20zM120 145h15v2h-15zM120 150h18v2h-18z'/%3E%3Cpath d='M30 160l5-5 5 10 5-15 5 15 5-10 5 5' fill='none' stroke='%233b82f6' stroke-opacity='0.04' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 24px 24px, 400px 400px;
+  background-attachment: fixed;
+}
+
+/* Night Mode Global Inversion */
+html.night-mode {
+  filter: invert(1) hue-rotate(180deg) brightness(1.1) contrast(0.95);
+  background-color: #e2e8f0;
+}
+
+html.night-mode body,
+html.night-mode .medical-bg {
+  background-color: #e2e8f0; /* Inverts to a soft dark slate instead of pure black */
+}
+
+/* Re-invert things that shouldn't be inverted (like images) */
+html.night-mode img,
+html.night-mode video,
+html.night-mode .no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
